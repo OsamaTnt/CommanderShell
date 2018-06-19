@@ -20,14 +20,13 @@ void displayShell_Id(char *userName,char*shellName)
 
 char *getCommandLine()
 {
-    char *S=malloc(sizeof(char*));
+    char *S=NULL;
     size_t MAX_SIZE=0,i=0;
 
     getline(&S,&MAX_SIZE,stdin);
 
     //get rid of '\n' by replacing it with '\0'
     for(i=0;i<strlen(S);i++) { if(S[i]=='\n'){S[i]='\0';break;} }
-
     return S;
 }
 
