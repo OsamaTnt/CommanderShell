@@ -1,7 +1,9 @@
 # depslib dependency file v1.0
-1529324454 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
+1529403338 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
 
