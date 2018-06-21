@@ -43,8 +43,31 @@ void setArgs(char *userCommand,char *commandArgs[])
         if(i==0) {commandArgs[i] = strtok(userCommand," \n");}
         else
         {
-            if(commandArgs[i]!=NULL){commandArgs[i] = strtok(NULL," \n");} else {break;}
+            if(commandArgs[i]!=NULL){commandArgs[i] = strtok(NULL," \n");}
+            else {break;}
         }
+    }
+}
+
+//This function will return a lowerCase copy of the original string
+char* getLower(char *S)
+{
+    char *temp=malloc(sizeof(char)*strlen(S));
+    for(i=0;i<(int)strlen(S);i++)
+    {
+        temp[i]=S[i];
+        if(temp[i]>=65 && temp[i]<=97) {temp[i]+=32;}
+    }
+    return temp;
+}
+
+void proc_Commands(char *commandArgs[])
+{
+    if(commandArgs[0])
+    {
+        /*
+           TO DO ==> proccess our-commands here
+        */
     }
 }
 
@@ -73,14 +96,18 @@ int main()
 
         proc_Id=fork();
 
-        if(strcmp(userCommand,"exit")==0) {_exit(0);break;}
+        //check if $exit
+        if(strcmp(getLower(userCommand),"exit")==0) {_exit(0);}
 
         if(proc_Id==0)
-        {execvp(commandArgs[0],commandArgs);_exit(0);}
+        {
+            execvp(commandArgs[0],commandArgs);
+            proc_Commands(commandArgs);
+            _exit(0);
+        }
 
         else if(waitpid(proc_Id,status,0)==proc_Id) {}
         else {printf("Err\n");_exit(0);}
     }
-
     return 0;
 }
