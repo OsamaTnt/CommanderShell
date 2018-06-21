@@ -14,9 +14,7 @@ size_t i,j;
 
 void displayShell_Id(char *userName,char*shellName)
 {
-    strcat(userName,": $");
     char *shell_Id=(char*)malloc(strlen(userName)+strlen(shellName));
-
     strcat(shell_Id,shellName); strcat(shell_Id,userName);
     printf("%s",shell_Id);
 }
@@ -50,10 +48,10 @@ void setArgs(char *userCommand,char *commandArgs[])
     }
 }
 
-int main(int argc,char *argv[])
+int main()
 {
 
-    char *userName=getlogin();
+    char *userName=getlogin(); strcat(userName,": $");
     char *shellName="Commander_";
 
     int *status=NULL;
@@ -75,12 +73,12 @@ int main(int argc,char *argv[])
 
         proc_Id=fork();
 
-        if(strcmp(userCommand,"exit")==0) {_exit(0);}
+        if(strcmp(userCommand,"exit")==0) {_exit(0);break;}
 
         if(proc_Id==0)
-        { execvp(argv[0],argv); }
+        {execvp(commandArgs[0],commandArgs);_exit(0);}
 
-        else if(waitpid(proc_Id,status,0)==proc_Id) {_exit(0);}
+        else if(waitpid(proc_Id,status,0)==proc_Id) {}
         else {printf("Err\n");_exit(0);}
     }
 
