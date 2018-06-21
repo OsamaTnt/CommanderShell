@@ -1,9 +1,12 @@
 # depslib dependency file v1.0
-1529621533 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
+1529624716 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<unistd.h>
 	<sys/types.h>
 	<sys/wait.h>
+	"ANSI_COLORS.h"
+
+1529624684 /home/osama/Desktop/CommanderShell/CommanderShell.git/ANSI_COLORS.h
 

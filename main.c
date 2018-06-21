@@ -4,12 +4,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "ANSI_COLORS.h"
 
 typedef int bool;
 enum {false,true};  //false=0;true=1
 
 const int MAX_ARGS_SIZE =15;
-
 size_t i,j;
 
 void displayShell_Id(char *userName,char*shellName)
@@ -64,11 +64,7 @@ char* getLower(char *S)
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
-    {
-        /*
-           TO DO ==> proccess our-commands here
-        */
-    }
+    {}
 }
 
 int main()
