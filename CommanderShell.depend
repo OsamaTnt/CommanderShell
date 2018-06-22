@@ -10,3 +10,14 @@
 
 1529624684 /home/osama/Desktop/CommanderShell/CommanderShell.git/ANSI_COLORS.h
 
+1529626988 source:/home/osama/Desktop/CommanderShell/CommanderShell/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	"ANSI_COLORS.h"
+
+1529626988 /home/osama/Desktop/CommanderShell/CommanderShell/ANSI_COLORS.h
+
