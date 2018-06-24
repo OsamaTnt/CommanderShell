@@ -49,14 +49,14 @@ void setArgs(char *userCommand,char *commandArgs[])
     }
 }
 
-//This function will return a lowerCase copy of the original string
+/* This function will return a lowerCase copy of the original string */
 char* getLower(char *S)
 {
-    char *temp=malloc(sizeof(char)*strlen(S));
-    for(i=0;i<(int)strlen(S);i++)
+    i=0;  char *temp=(char*)malloc(strlen(S)+1);
+    while(i<strlen(S))
     {
-        temp[i]=S[i];
-        if(temp[i]>=65 && temp[i]<=97) {temp[i]+=32;}
+        if(S[i]>=65 && S[i]<=90) {temp[i]=S[i]+32;}
+        else {temp[i]=S[i];} i++;
     }
     return temp;
 }
@@ -64,7 +64,15 @@ char* getLower(char *S)
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
-    {}
+    {
+        //$proc changeTextColor -[COLOR_NAME]
+        if(strcmp(getLower(commandArgs[0]),"changetextcolor")==0)
+        {
+            /*
+                TO DO ==> call changeToText()
+            */
+        }
+    }
 }
 
 int main()
