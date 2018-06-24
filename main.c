@@ -9,8 +9,11 @@
 typedef int bool;
 enum {false,true};  //false=0;true=1
 
+enum { Err_ChangeTextColor,Err_COLOR_NAME };
+
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
+
 
 void displayShell_Id(char *userName,char*shellName)
 {
@@ -61,17 +64,78 @@ char* getLower(char *S)
     return temp;
 }
 
+void Err_Manager(int Err_ID)
+{
+    /*00. $proc changeTextColor -[COLOR_NAME]*/
+    //$changeToTextColor [Err_ChangeTextColor]
+    if(Err_ID==Err_ChangeTextColor)
+    {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
+
+    //$changeToTextColor [Err_COLOR_NAME]
+    else if(Err_ID==Err_COLOR_NAME)
+    {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n");}
+
+    /*01. $proc somethingElse -[OPTION]*/
+    //..
+}
+
+/*
+    changeTextColor() "How it Works" :
+    if ( COLOR_NAME IS CORRECT && COLOR_IS_SUPPORTED) {UPDATE_COLOR && return(0)}
+    else {Err && return(-1)}
+*/
+int changeTextColor(char *COLOR_NAME)
+{
+    if(strcmp(getLower(COLOR_NAME),"black")==0)
+     {printf("%s\n",ANSI_BLACK); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"red")==0)
+     {printf("%s\n",ANSI_RED); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"green")==0)
+     {printf("%s\n",ANSI_GREEN); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"brown")==0)
+     {printf("%s\n",ANSI_BROWN); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"blue")==0)
+     {printf("%s\n",ANSI_BLUE); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"magenta")==0)
+     {printf("%s\n",ANSI_MAGENTA); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"cyan")==0)
+     {printf("%s\n",ANSI_CYAN); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"gray")==0)
+     {printf("%s\n",ANSI_GRAY); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"yellow")==0)
+     {printf("%s\n",ANSI_YELLOW); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"white")==0)
+     {printf("%s\n",ANSI_WHITE); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"dark_gray")==0)
+     {printf("%s\n",ANSI_DARK_GRAY); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"light_red")==0)
+     {printf("%s\n",ANSI_LIGHT_RED); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"light_green")==0)
+     {printf("%s\n",ANSI_LIGHT_GREEN); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"light_blue")==0)
+     {printf("%s\n",ANSI_LIGHT_BLUE); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"light_magenta")==0)
+     {printf("%s\n",ANSI_LIGHT_MAGENTA); return 0;}
+    else if(strcmp(getLower(COLOR_NAME),"light_cyan")==0)
+     {printf("%s\n",ANSI_LIGHT_CYAN); return 0;}
+    else {return -1;}
+}
+
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
     {
-        //$proc changeTextColor -[COLOR_NAME]
+        //00. $proc changeTextColor -[COLOR_NAME]
         if(strcmp(getLower(commandArgs[0]),"changetextcolor")==0)
         {
-            /*
-                TO DO ==> call changeToText()
-            */
+            if(commandArgs[1])
+            {
+                if(changeTextColor(commandArgs[1])==-1) {Err_Manager(Err_COLOR_NAME);}
+            } else {Err_Manager(Err_ChangeTextColor);}
         }
+
+        //01. $proc something else..
+
     }
 }
 
