@@ -9,7 +9,8 @@
 typedef int bool;
 enum {false,true};  //false=0;true=1
 
-enum { Err_ChangeTextColor,Err_COLOR_NAME };
+enum { Err_ChangeTextColor,Err_COLOR_NAME,
+       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREAT };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -65,17 +66,30 @@ char* getLower(char *S)
 
 void Err_Manager(int Err_ID)
 {
-    /*00. proc $changeTextColor -[COLOR_NAME]*/
-    //$changeToTextColor [Err_ChangeTextColor]
-    if(Err_ID==Err_ChangeTextColor)
-    {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
+    switch(Err_ID)
+    {
+        /*00.$changeTextColor -[COLOR_NAME]*/
+        case Err_ChangeTextColor :
+            {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n"); break;}
+        case Err_COLOR_NAME :
+            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n"); break;}
 
-    //$changeToTextColor [Err_COLOR_NAME]
-    else if(Err_ID==Err_COLOR_NAME)
-    {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n");}
 
-    /*01. proc $something else
-    //..
+        /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
+        case Err_Create : printf("Err_Create\n");
+            break;
+        case Err_NOT_SUPPORTED_TYPE : printf("Err_NOT_SUPPORTED_TYPE\n");
+            break;
+        case Err_NO_SPECIFIED_PATH_NAME : printf("Err_NO_SPECIFIED_PATH_NAME\n");
+            break;
+        case Err_COULD_NOT_CREAT : printf("Err_COULD_NOT_CREAT\n");
+            break;
+
+        /*Defual*/
+        default :
+            break;
+
+    }
 }
 
 /*
@@ -120,6 +134,11 @@ int changeTextColor(char *COLOR_NAME)
     else {return -1;}
 }
 
+int Create(char *Type,char *Name)
+{
+    return -1;
+}
+
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
@@ -133,11 +152,27 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_ChangeTextColor);}
         }
 
-        /*
-            TO DO:
-            01. proc $Create -d -[dirName] -(optional)[desPath]
-            02. proc $Create -f -[fileName] -(optional)[desPath]
-        */
+        /*01. proc $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"create")==0)
+        {
+            if(commandArgs[1])
+            {
+                if( (strcmp(getLower(commandArgs[1]),"-d")==0) || (strcmp(getLower(commandArgs[1]),"-f")==0)
+                  || (strcmp(getLower(commandArgs[1]),"d")==0) || (strcmp(getLower(commandArgs[1]),"f")==0) )
+                {
+                    if(commandArgs[2])
+                    {
+                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREAT);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+
+                } else
+                  {
+                     Err_Manager(Err_NOT_SUPPORTED_TYPE);
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                  }
+
+            } else {Err_Manager(Err_Create);}
+        }
     }
 }
 
