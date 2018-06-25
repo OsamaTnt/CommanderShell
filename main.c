@@ -10,7 +10,7 @@ typedef int bool;
 enum {false,true};  //false=0;true=1
 
 enum { Err_ChangeTextColor,Err_COLOR_NAME,
-       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREAT };
+       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -76,14 +76,14 @@ void Err_Manager(int Err_ID)
 
 
         /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
-        case Err_Create : printf("Err_Create\n");
-            break;
-        case Err_NOT_SUPPORTED_TYPE : printf("Err_NOT_SUPPORTED_TYPE\n");
-            break;
-        case Err_NO_SPECIFIED_PATH_NAME : printf("Err_NO_SPECIFIED_PATH_NAME\n");
-            break;
-        case Err_COULD_NOT_CREAT : printf("Err_COULD_NOT_CREAT\n");
-            break;
+        case Err_Create :
+            {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_NOT_SUPPORTED_TYPE :
+            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_NO_SPECIFIED_PATH_NAME :
+            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_COULD_NOT_CREATE :
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
 
         /*Defual*/
         default :
@@ -162,7 +162,7 @@ void proc_Commands(char *commandArgs[])
                 {
                     if(commandArgs[2])
                     {
-                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREAT);}
+                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREATE);}
                     } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
 
                 } else
