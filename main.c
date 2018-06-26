@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include "ANSI_COLORS.h"
 
 typedef int bool;
@@ -142,6 +144,12 @@ bool bIsFileExists(char *PATH_NAME)
     else {return false;}
 }
 
+bool bIsDirectoryExists(char *PATH_NAME)
+{
+    if(opendir(PATH_NAME)) {return true;}
+    else {return false;}
+}
+
 int Create(char *Type,char *PATH_NAME)
 {
     //if Type was a File
@@ -162,8 +170,14 @@ int Create(char *Type,char *PATH_NAME)
     //if Type was a directory
     else if( (strcmp(Type,"-d")==0) || (strcmp(Type,"d")==0) )
     {
-        //..
-        return 0;
+        if(bIsDirectoryExists(PATH_NAME))
+        {Err_Manager(Err_ALREADY_EXISTS); return 0; }
+
+        else
+        {
+            if(mkdir(PATH_NAME,ACCESSPERMS)==0) { return 0;}
+            else {return -1;}
+        }
     }
 
     else {return -1;}
