@@ -10,7 +10,7 @@ typedef int bool;
 enum {false,true};  //false=0;true=1
 
 enum { Err_ChangeTextColor,Err_COLOR_NAME,
-       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE };
+       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -84,6 +84,8 @@ void Err_Manager(int Err_ID)
             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_COULD_NOT_CREATE :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_ALREADY_EXISTS :
+            {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
 
         /*Defual*/
         default :
@@ -134,9 +136,37 @@ int changeTextColor(char *COLOR_NAME)
     else {return -1;}
 }
 
-int Create(char *Type,char *Name)
+bool bIsFileExists(char *PATH_NAME)
 {
-    return -1;
+    if(fopen(PATH_NAME,"r")) {return true;}
+    else {return false;}
+}
+
+int Create(char *Type,char *PATH_NAME)
+{
+    //if Type was a File
+    if( (strcmp(Type,"-f")==0) || (strcmp(Type,"f")==0) )
+    {
+        if(bIsFileExists(PATH_NAME))
+        {Err_Manager(Err_ALREADY_EXISTS); return 0;}
+
+        else
+        {
+            FILE *F=fopen(PATH_NAME,"w");
+
+            if(!F) {return -1;}
+            else {fclose(F); return 0;}
+        }
+    }
+
+    //if Type was a directory
+    else if( (strcmp(Type,"-d")==0) || (strcmp(Type,"d")==0) )
+    {
+        //..
+        return 0;
+    }
+
+    else {return -1;}
 }
 
 void proc_Commands(char *commandArgs[])
@@ -214,5 +244,6 @@ int main()
         else if(waitpid(proc_Id,status,0)==proc_Id) {}
         else {printf("Err\n");_exit(0);}
     }
+
     return 0;
 }
