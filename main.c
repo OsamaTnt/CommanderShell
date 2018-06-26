@@ -242,7 +242,37 @@ int _Delete(char *Type,char *PATH_NAME)
 
 int _Rename(char *PATH_OLD_NAME,char *NEW_NAME)
 {
-    return -1;
+    if(!bIsDirectoryExists(PATH_OLD_NAME) && !bIsFileExists(PATH_OLD_NAME))
+    {Err_Manager(Err_NOT_EXISTS); return 0;}
+
+    else
+    {
+        char *PATH_NEW_NAME=NULL;
+        int Pos_To_Name=0;
+        bool bIsPath=false;
+
+        for(i=0;i<strlen(PATH_OLD_NAME);i++)
+        {
+            if(PATH_OLD_NAME[i]=='/') {bIsPath=true; Pos_To_Name=i;}
+        }
+
+        if(!bIsPath) {PATH_NEW_NAME = NEW_NAME;}
+
+        else
+        {
+            PATH_NEW_NAME = malloc(sizeof(Pos_To_Name+1));
+
+            for(i=0;i<=Pos_To_Name;i++)
+            {PATH_NEW_NAME[i] = PATH_OLD_NAME[i];}
+
+            PATH_NEW_NAME = (char *)realloc(PATH_NEW_NAME,strlen(PATH_NEW_NAME)+strlen(NEW_NAME)+1);
+            strcat(PATH_NEW_NAME,NEW_NAME);
+        }
+
+        if(rename(PATH_OLD_NAME,PATH_NEW_NAME)==-1) {return -1;}
+        else {return 0;}
+
+    }
 }
 
 void proc_Commands(char *commandArgs[])
