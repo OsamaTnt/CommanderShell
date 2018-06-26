@@ -153,7 +153,7 @@ bool bIsDirectoryExists(char *PATH_NAME)
 int Create(char *Type,char *PATH_NAME)
 {
     //if Type was a File
-    if( (strcmp(Type,"-f")==0) || (strcmp(Type,"f")==0) )
+    if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
     {
         if(bIsFileExists(PATH_NAME))
         {Err_Manager(Err_ALREADY_EXISTS); return 0;}
@@ -168,7 +168,7 @@ int Create(char *Type,char *PATH_NAME)
     }
 
     //if Type was a directory
-    else if( (strcmp(Type,"-d")==0) || (strcmp(Type,"d")==0) )
+    else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
         if(bIsDirectoryExists(PATH_NAME))
         {Err_Manager(Err_ALREADY_EXISTS); return 0; }
