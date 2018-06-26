@@ -13,7 +13,8 @@ enum {false,true};  //false=0;true=1
 
 enum { Err_ChangeTextColor,Err_COLOR_NAME,
        Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
-       Err_DELETE,Err_COULD_NOT_DELETE,Err_NOT_EXISTS };
+       Err_DELETE,Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
+       Err_RENAME,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -95,9 +96,18 @@ void Err_Manager(int Err_ID)
         case Err_DELETE :
             {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_COULD_NOT_DELETE :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_NOT_EXISTS :
-            {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+
+
+        /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
+        case Err_RENAME :
+            {printf("\nCOMMAND_ERROR :\n\t -Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+        case Err_NO_SPECIFIED_NEW_NAME :
+            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+        case Err_COULD_NOT_RENAME :
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
 
 
         /*Defual*/
@@ -108,7 +118,7 @@ void Err_Manager(int Err_ID)
 }
 
 /*
-    changeTextColor() "How it Works" :
+    changeTextColor() ".How it Works." :
     if ( COLOR_NAME IS CORRECT && COLOR_IS_SUPPORTED) {UPDATE_COLOR && return(0)}
     else {Err && return(-1)}
 */
@@ -230,6 +240,11 @@ int _Delete(char *Type,char *PATH_NAME)
 
 }
 
+int _Rename(char *PATH_OLD_NAME,char *NEW_NAME)
+{
+    return -1;
+}
+
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
@@ -287,8 +302,18 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_DELETE);}
         }
 
-        /*03.something else!!*/
-        //..
+        /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"rename")==0)
+        {
+            if(commandArgs[1])
+            {
+                if(commandArgs[2])
+                {
+                    if(_Rename(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME);}
+                } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME);}
+
+            } else {Err_Manager(Err_RENAME);}
+        }
 
     }
 }
@@ -329,7 +354,7 @@ int main()
             _exit(0);
         }
 
-        else if(waitpid(proc_Id,status,0)==proc_Id) {}
+        else if(waitpid(proc_Id,status,0)==proc_Id) {/* What's 1000-7 ? */}
         else {printf("Err\n");_exit(0);}
     }
 
