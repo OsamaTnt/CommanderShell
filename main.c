@@ -103,11 +103,11 @@ void Err_Manager(int Err_ID)
 
         /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
         case Err_RENAME :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
         case Err_NO_SPECIFIED_NEW_NAME :
-            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
         case Err_COULD_NOT_RENAME :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
 
 
         /*Defual*/
@@ -240,7 +240,7 @@ int _Delete(char *Type,char *PATH_NAME)
 
 }
 
-int _Rename(char *PATH_OLD_NAME,char *NEW_NAME)
+int changeName(char *PATH_OLD_NAME,char *NEW_NAME)
 {
     if(!bIsDirectoryExists(PATH_OLD_NAME) && !bIsFileExists(PATH_OLD_NAME))
     {Err_Manager(Err_NOT_EXISTS); return 0;}
@@ -332,14 +332,14 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_DELETE);}
         }
 
-        /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
-        else if(strcmp(getLower(commandArgs[0]),"rename")==0)
+        /*03.$changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"changename")==0)
         {
             if(commandArgs[1])
             {
                 if(commandArgs[2])
                 {
-                    if(_Rename(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME);}
+                    if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME);}
                 } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME);}
 
             } else {Err_Manager(Err_RENAME);}
