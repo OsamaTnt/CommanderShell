@@ -12,7 +12,8 @@ typedef int bool;
 enum {false,true};  //false=0;true=1
 
 enum { Err_ChangeTextColor,Err_COLOR_NAME,
-       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS };
+       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
+       Err_DELETE,Err_COULD_NOT_DELETE };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -77,7 +78,7 @@ void Err_Manager(int Err_ID)
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n"); break;}
 
 
-        /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
+        /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
         case Err_Create :
             {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_NOT_SUPPORTED_TYPE :
@@ -88,6 +89,14 @@ void Err_Manager(int Err_ID)
             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_ALREADY_EXISTS :
             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+
+
+        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
+        case Err_DELETE :
+            {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_COULD_NOT_DELETE :
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+
 
         /*Defual*/
         default :
@@ -183,6 +192,11 @@ int Create(char *Type,char *PATH_NAME)
     else {return -1;}
 }
 
+int _Delete(char *Type,char *PATH_NAME)
+{
+    return -1;
+}
+
 void proc_Commands(char *commandArgs[])
 {
     if(commandArgs[0])
@@ -217,8 +231,35 @@ void proc_Commands(char *commandArgs[])
 
             } else {Err_Manager(Err_Create);}
         }
+
+        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"delete")==0)
+        {
+            if(commandArgs[1])
+            {
+                if( (strcmp(getLower(commandArgs[1]),"-d")==0) || (strcmp(getLower(commandArgs[1]),"-f")==0)
+                  || (strcmp(getLower(commandArgs[1]),"d")==0) || (strcmp(getLower(commandArgs[1]),"f")==0) )
+                {
+                    if(commandArgs[2])
+                    {
+                        if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_DELETE);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+
+                } else
+                  {
+                     Err_Manager(Err_NOT_SUPPORTED_TYPE);
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                  }
+
+            } else {Err_Manager(Err_DELETE);}
+        }
+
+        /*03.something else!!*/
+
+
     }
 }
+
 
 int main()
 {
