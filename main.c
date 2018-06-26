@@ -13,7 +13,7 @@ enum {false,true};  //false=0;true=1
 
 enum { Err_ChangeTextColor,Err_COLOR_NAME,
        Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
-       Err_DELETE,Err_COULD_NOT_DELETE };
+       Err_DELETE,Err_COULD_NOT_DELETE,Err_NOT_EXISTS };
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -96,6 +96,8 @@ void Err_Manager(int Err_ID)
             {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_COULD_NOT_DELETE :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        case Err_NOT_EXISTS :
+            {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
 
 
         /*Defual*/
@@ -190,11 +192,42 @@ int Create(char *Type,char *PATH_NAME)
     }
 
     else {return -1;}
+
 }
 
 int _Delete(char *Type,char *PATH_NAME)
 {
-    return -1;
+    //if Type was a File
+    if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
+    {
+        if(!bIsFileExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS); return 0;}
+
+        else
+        {
+            if(unlink(PATH_NAME)==-1) {return -1;}
+            else {return 0;}
+        }
+    }
+
+    //if Type was a Directory
+    /*
+        This is not a flexible method, it can only delete an empty directory
+        to be able to delete a full file tree it will be a little bit complicated,
+        but it can be done by calling nftw() recursivly
+    */
+    else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
+    {
+        if(!bIsDirectoryExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS); return 0;}
+
+        else
+        {
+            if(rmdir(PATH_NAME)==-1) {return -1;}
+            else {return 0;}
+        }
+    }
+
+    else {return -1;}
+
 }
 
 void proc_Commands(char *commandArgs[])
@@ -255,7 +288,7 @@ void proc_Commands(char *commandArgs[])
         }
 
         /*03.something else!!*/
-
+        //..
 
     }
 }
