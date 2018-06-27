@@ -11,12 +11,13 @@
 typedef int bool;
 enum {false,true};  //false=0;true=1
 
-enum { Err_ChangeTextColor,Err_COLOR_NAME,
-       Err_Create,Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
-       Err_DELETE,Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
-       Err_RENAME,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME };
+enum { Err_Usage,
+       Err_COLOR_NAME,
+       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
+       Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
+       Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME };
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,COPY};
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -74,16 +75,34 @@ void Err_Manager(int Err_ID,int Command_ID)
 {
     switch(Err_ID)
     {
+        /*General Errs*/
+        case Err_Usage :
+            {
+                if(Command_ID==CHANGE_TEXT_COLOR)
+                 {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
+                else if(Command_ID==CREATE)
+                 {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
+                else if(Command_ID==DELETE)
+                 {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+                else if(Command_ID==CHANGE_NAME)
+                {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                break;
+            }
+        case Err_NOT_EXISTS :
+            {
+                if(Command_ID==DELETE)
+                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+                else if(Command_ID==CHANGE_NAME)
+                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                break;
+            }
+
         /*00.$changeTextColor -[COLOR_NAME]*/
-        case Err_ChangeTextColor :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n"); break;}
         case Err_COLOR_NAME :
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n"); break;}
 
 
         /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
-        case Err_Create :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_NOT_SUPPORTED_TYPE :
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_NO_SPECIFIED_PATH_NAME :
@@ -94,24 +113,12 @@ void Err_Manager(int Err_ID,int Command_ID)
             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
 
 
-        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
-        case Err_DELETE :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
         case Err_COULD_NOT_DELETE :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
-        case Err_NOT_EXISTS :
-            {
-                if(Command_ID==DELETE)
-                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-                else if(Command_ID==CHANGE_NAME)
-                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-                break;
-            }
 
 
         /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
-        case Err_RENAME :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
         case Err_NO_SPECIFIED_NEW_NAME :
             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
         case Err_COULD_NOT_RENAME :
@@ -293,7 +300,7 @@ void proc_Commands(char *commandArgs[])
             if(commandArgs[1])
             {
                 if(changeTextColor(commandArgs[1])==-1) {Err_Manager(Err_COLOR_NAME,CHANGE_TEXT_COLOR);}
-            } else {Err_Manager(Err_ChangeTextColor,CHANGE_TEXT_COLOR);}
+            } else {Err_Manager(Err_Usage,CHANGE_TEXT_COLOR);}
         }
 
         /*01. proc $Create -[TYPE] -[PATH/TO/NEW-NAME]*/
@@ -315,7 +322,7 @@ void proc_Commands(char *commandArgs[])
                      if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
                   }
 
-            } else {Err_Manager(Err_Create,CREATE);}
+            } else {Err_Manager(Err_Usage,CREATE);}
         }
 
         /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
@@ -337,7 +344,7 @@ void proc_Commands(char *commandArgs[])
                      if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
                   }
 
-            } else {Err_Manager(Err_DELETE,DELETE);}
+            } else {Err_Manager(Err_Usage,DELETE);}
         }
 
         /*03.$changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
@@ -350,21 +357,27 @@ void proc_Commands(char *commandArgs[])
                     if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME,CHANGE_NAME);}
                 } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME,CHANGE_NAME);}
 
-            } else {Err_Manager(Err_RENAME,CHANGE_NAME);}
+            } else {Err_Manager(Err_Usage,CHANGE_NAME);}
         }
+
+
+        /*04.$Copy -[Type] -[PATH/TO/SRC_NAME] -[PATH/TO/DES_NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"copy")==0)
+        {
+            //
+        }
+
 
         /*
             ||\ TO DO /||
 
-            /*04.$Copy -[PATH/TO/SRC_NAME] -[PATH/TO/DES_NAME]*/
+            05.$Encrypt -[PATH/TO/SRC_NAME]
 
-            /*05.$Encrypt -[PATH/TO/SRC_NAME]
+            06.$Decrypt -[PATH/TO/SRC_NAME]
 
-            /*06.$Decrypt -[PATH/TO/SRC_NAME]
+            07.$ListCurrentDir
 
-            /*07.$ListCurrentDir
-
-            /*08.$changeDir -[PATH/TO/NEW_DIR]
+            08.$changeDir -[PATH/TO/NEW_DIR]
         */
     }
 }
