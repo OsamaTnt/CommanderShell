@@ -353,6 +353,19 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_RENAME,CHANGE_NAME);}
         }
 
+        /*
+            ||\ TO DO /||
+
+            /*04.$Copy -[PATH/TO/SRC_NAME] -[PATH/TO/DES_NAME]*/
+
+            /*05.$Encrypt -[PATH/TO/SRC_NAME]
+
+            /*06.$Decrypt -[PATH/TO/SRC_NAME]
+
+            /*07.$ListCurrentDir
+
+            /*08.$changeDir -[PATH/TO/NEW_DIR]
+        */
     }
 }
 
