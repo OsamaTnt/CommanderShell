@@ -83,15 +83,15 @@ void Err_Manager(int Err_ID,int Command_ID)
 
         /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
         case Err_Create :
-            {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_NOT_SUPPORTED_TYPE :
-            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_NO_SPECIFIED_PATH_NAME :
-            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_COULD_NOT_CREATE :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_ALREADY_EXISTS :
-            {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
 
 
         /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
@@ -296,7 +296,7 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_ChangeTextColor,CHANGE_TEXT_COLOR);}
         }
 
-        /*01. proc $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
+        /*01. proc $Create -[TYPE] -[PATH/TO/NEW-NAME]*/
         else if(strcmp(getLower(commandArgs[0]),"create")==0)
         {
             if(commandArgs[1])
