@@ -11,14 +11,11 @@
 typedef int bool;
 enum {false,true};  //false=0;true=1
 
-enum { Err_Usage,
+enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT,
        Err_COLOR_NAME,
-       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
-       Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
-       Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME,
-       Err_COULD_NOT_COPY };
+       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME};
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT};
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -78,74 +75,74 @@ void Err_Manager(int Err_ID,int Command_ID)
     {
         /*General Errs*/
         case Err_Usage :
-            {
-                if(Command_ID==CHANGE_TEXT_COLOR)
-                 {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
-                else if(Command_ID==CREATE)
-                 {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
-                else if(Command_ID==DELETE)
-                 {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-                else if(Command_ID==CHANGE_NAME)
-                 {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-                else if(Command_ID==MAKE_COPY)
-                 {printf("\nCOMMAND_ERROR :\n\t -Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-                break;
-            }
+        {
+            if(Command_ID==CHANGE_TEXT_COLOR)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
+            else if(Command_ID==CREATE)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
+            else if(Command_ID==DELETE)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+            else if(Command_ID==CHANGE_NAME)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+            else if(Command_ID==MAKE_COPY)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            else if(Command_ID==ENCRYPT)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
+            break;
+        }
+
         case Err_NOT_EXISTS :
-            {
-                if(Command_ID==DELETE)
-                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-                else if(Command_ID==CHANGE_NAME)
-                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-                else if(Command_ID==MAKE_COPY)
-                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/\n\n");}
-                break;
-            }
+        {
+            if(Command_ID==DELETE)
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+            else if(Command_ID==CHANGE_NAME)
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+            else if(Command_ID==MAKE_COPY)
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/\n\n");}
+            break;
+        }
+
         case Err_ALREADY_EXISTS :
-            {
-                if(Command_ID==CREATE)
-                 {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
-                else if(Command_ID==MAKE_COPY)
-                 {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-                break;
-            }
+        {
+            if(Command_ID==CREATE)
+             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
+            else if(Command_ID==MAKE_COPY)
+             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            break;
+        }
+
         case Err_NO_SPECIFIED_NEW_NAME :
-            {
-                if(Command_ID==CHANGE_NAME)
-                 {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-                else if(Command_ID==MAKE_COPY)
-                 {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-                break;
-            }
+        {
+            if(Command_ID==CHANGE_NAME)
+             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+            else if(Command_ID==MAKE_COPY)
+             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            break;
+        }
+        case Err_COULD_NOT :
+        {
+            if(Command_ID==CREATE)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
+            else if(Command_ID==DELETE)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+            else if(Command_ID==CHANGE_NAME)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+            else if(Command_ID==MAKE_COPY)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            break;
+        }
 
 
-        /*00.$changeTextColor -[COLOR_NAME]*/
+        /*$changeTextColor -[COLOR_NAME] local Errs*/
         case Err_COLOR_NAME :
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n"); break;}
 
 
-        /*01.$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
+        /*$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] local Errs*/
         case Err_NOT_SUPPORTED_TYPE :
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_NO_SPECIFIED_PATH_NAME :
             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-        case Err_COULD_NOT_CREATE :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-
-
-        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
-        case Err_COULD_NOT_DELETE :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
-
-
-        /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
-        case Err_COULD_NOT_RENAME :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
-
-
-        /*04.$makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/
-        case Err_COULD_NOT_COPY :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n"); break;}
 
 
         /*Defual*/
@@ -347,6 +344,11 @@ int makeCopy(char *PATH_TO_SRC,char *PATH_TO_NEW_COPY)
     else { return -1; }
 }
 
+int encrypt(char *PATH_NAME)
+{
+    return -1;
+}
+
 
 void proc_Commands(char *commandArgs[])
 {
@@ -371,7 +373,7 @@ void proc_Commands(char *commandArgs[])
                 {
                     if(commandArgs[2])
                     {
-                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREATE,CREATE);}
+                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,CREATE);}
                     } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
 
                 } else
@@ -393,7 +395,7 @@ void proc_Commands(char *commandArgs[])
                 {
                     if(commandArgs[2])
                     {
-                        if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_DELETE,DELETE);}
+                        if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,DELETE);}
                     } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
 
                 } else
@@ -412,7 +414,7 @@ void proc_Commands(char *commandArgs[])
             {
                 if(commandArgs[2])
                 {
-                    if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME,CHANGE_NAME);}
+                    if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,CHANGE_NAME);}
                 } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME,CHANGE_NAME);}
 
             } else {Err_Manager(Err_Usage,CHANGE_NAME);}
@@ -426,17 +428,25 @@ void proc_Commands(char *commandArgs[])
             {
                 if(commandArgs[2])
                 {
-                    if(makeCopy(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_COPY,MAKE_COPY);}
+                    if(makeCopy(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,MAKE_COPY);}
                 } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME,MAKE_COPY);}
 
             } else {Err_Manager(Err_Usage,MAKE_COPY);}
         }
 
 
+        /*05.$Encrypt -[PATH/TO/SRC_NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"encrypt")==0)
+        {
+            if(commandArgs[1])
+            {
+                if(encrypt(commandArgs[1])==-1) {Err_Manager(Err_COULD_NOT,ENCRYPT);}
+
+            } else {Err_Manager(Err_Usage,ENCRYPT);}
+        }
+
         /*
             ||\ TO DO /||
-
-            05.$Encrypt -[PATH/TO/SRC_NAME]
 
             06.$Decrypt -[PATH/TO/SRC_NAME]
 
