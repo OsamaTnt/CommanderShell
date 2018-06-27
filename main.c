@@ -15,9 +15,10 @@ enum { Err_Usage,
        Err_COLOR_NAME,
        Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
        Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
-       Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME };
+       Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME,
+       Err_EXISTS,Err_COULD_NOT_COPY };
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,COPY};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY};
 
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
@@ -85,7 +86,9 @@ void Err_Manager(int Err_ID,int Command_ID)
                 else if(Command_ID==DELETE)
                  {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
                 else if(Command_ID==CHANGE_NAME)
-                {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                 {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                else if(Command_ID==MAKE_COPY)
+                 {printf("\nCOMMAND_ERROR :\n\t -Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
                 break;
             }
         case Err_NOT_EXISTS :
@@ -94,8 +97,27 @@ void Err_Manager(int Err_ID,int Command_ID)
                  {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
                 else if(Command_ID==CHANGE_NAME)
                  {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                else if(Command_ID==MAKE_COPY)
+                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/\n\n");}
                 break;
             }
+        case Err_ALREADY_EXISTS :
+            {
+                if(Command_ID==CREATE)
+                 {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
+                else if(Command_ID==MAKE_COPY)
+                 {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+                break;
+            }
+        case Err_NO_SPECIFIED_NEW_NAME :
+            {
+                if(Command_ID==CHANGE_NAME)
+                 {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                else if(Command_ID==MAKE_COPY)
+                 {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+                break;
+            }
+
 
         /*00.$changeTextColor -[COLOR_NAME]*/
         case Err_COLOR_NAME :
@@ -109,8 +131,6 @@ void Err_Manager(int Err_ID,int Command_ID)
             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
         case Err_COULD_NOT_CREATE :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-        case Err_ALREADY_EXISTS :
-            {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
 
 
         /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
@@ -119,10 +139,13 @@ void Err_Manager(int Err_ID,int Command_ID)
 
 
         /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
-        case Err_NO_SPECIFIED_NEW_NAME :
-            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
         case Err_COULD_NOT_RENAME :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n"); break;}
+
+
+        /*04.$makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/
+        case Err_COULD_NOT_COPY :
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n"); break;}
 
 
         /*Defual*/
@@ -180,7 +203,7 @@ bool bIsFileExists(char *PATH_NAME)
     else {return false;}
 }
 
-bool bIsDirectoryExists(char *PATH_NAME)
+bool bIsDirExists(char *PATH_NAME)
 {
     if(opendir(PATH_NAME)) {return true;}
     else {return false;}
@@ -206,7 +229,7 @@ int Create(char *Type,char *PATH_NAME)
     //if Type was a directory
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
-        if(bIsDirectoryExists(PATH_NAME))
+        if(bIsDirExists(PATH_NAME))
         {Err_Manager(Err_ALREADY_EXISTS,CREATE); return 0; }
 
         else
@@ -242,7 +265,7 @@ int _Delete(char *Type,char *PATH_NAME)
     */
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
-        if(!bIsDirectoryExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
+        if(!bIsDirExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
 
         else
         {
@@ -257,7 +280,7 @@ int _Delete(char *Type,char *PATH_NAME)
 
 int changeName(char *PATH_OLD_NAME,char *NEW_NAME)
 {
-    if(!bIsDirectoryExists(PATH_OLD_NAME) && !bIsFileExists(PATH_OLD_NAME))
+    if(!bIsDirExists(PATH_OLD_NAME) && !bIsFileExists(PATH_OLD_NAME))
     {Err_Manager(Err_NOT_EXISTS,CHANGE_NAME); return 0;}
 
     else
@@ -289,6 +312,48 @@ int changeName(char *PATH_OLD_NAME,char *NEW_NAME)
 
     }
 }
+
+/*
+    The Copy will works only for Type -[f] for now
+    the support for Type -[d] will be availabe on the next updates..
+*/
+int makeCopy(char *PATH_TO_SRC,char *PATH_TO_NEW_COPY)
+{
+    if(!bIsFileExists(PATH_TO_SRC) && !bIsDirExists(PATH_TO_SRC)) { Err_Manager(Err_NOT_EXISTS,MAKE_COPY); return 0; }
+
+    else if(PATH_TO_SRC==PATH_TO_NEW_COPY) { Err_Manager(Err_EXISTS,MAKE_COPY); return 0; }
+
+    //if Type was a File
+    else if(bIsFileExists(PATH_TO_SRC))
+    {
+        //check if des_File(NEW_COPY_NAME) already Exists
+        if(bIsFileExists(PATH_TO_NEW_COPY)) { Err_Manager(Err_ALREADY_EXISTS,MAKE_COPY); return 0; }
+
+        else
+        {
+            FILE *srcFile=fopen(PATH_TO_SRC,"r"), *desFile=fopen(PATH_TO_NEW_COPY,"w");
+            char c;
+
+            while( (c=fgetc(srcFile))!=EOF )
+            {fputc(c,desFile);}
+
+            fclose(srcFile); fclose(desFile);
+            return 0;
+        }
+    }
+
+    //If Type was a Directory (Soon..)
+    else if(bIsDirExists(PATH_TO_SRC))
+    {
+        //check if des_File(NEW_COPY_NAME) already Exists
+        if(bIsDirExists(PATH_TO_NEW_COPY)) { Err_Manager(Err_ALREADY_EXISTS,MAKE_COPY); return 0; }
+        //else {/* What's 1000-7 ? */}
+        return 0;
+    }
+
+    else { return -1; }
+}
+
 
 void proc_Commands(char *commandArgs[])
 {
@@ -361,10 +426,17 @@ void proc_Commands(char *commandArgs[])
         }
 
 
-        /*04.$Copy -[Type] -[PATH/TO/SRC_NAME] -[PATH/TO/DES_NAME]*/
-        else if(strcmp(getLower(commandArgs[0]),"copy")==0)
+        /*04.$Copy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/
+        else if( (strcmp(getLower(commandArgs[0]),"makecopy")==0) || ((strcmp(getLower(commandArgs[0]),"copy")==0)) )
         {
-            //
+            if(commandArgs[1])
+            {
+                if(commandArgs[2])
+                {
+                    if(makeCopy(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_COPY,MAKE_COPY);}
+                } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME,MAKE_COPY);}
+
+            } else {Err_Manager(Err_Usage,MAKE_COPY);}
         }
 
 
