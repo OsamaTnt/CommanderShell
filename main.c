@@ -16,7 +16,7 @@ enum { Err_Usage,
        Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME,Err_COULD_NOT_CREATE,Err_ALREADY_EXISTS,
        Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
        Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME,
-       Err_EXISTS,Err_COULD_NOT_COPY };
+       Err_COULD_NOT_COPY };
 
 enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY};
 
@@ -319,36 +319,29 @@ int changeName(char *PATH_OLD_NAME,char *NEW_NAME)
 */
 int makeCopy(char *PATH_TO_SRC,char *PATH_TO_NEW_COPY)
 {
-    if(!bIsFileExists(PATH_TO_SRC) && !bIsDirExists(PATH_TO_SRC)) { Err_Manager(Err_NOT_EXISTS,MAKE_COPY); return 0; }
+    if(!bIsFileExists(PATH_TO_SRC) && !bIsDirExists(PATH_TO_SRC))
+     {Err_Manager(Err_NOT_EXISTS,MAKE_COPY); return 0;}
 
-    else if(PATH_TO_SRC==PATH_TO_NEW_COPY) { Err_Manager(Err_EXISTS,MAKE_COPY); return 0; }
+    else if(PATH_TO_SRC==PATH_TO_NEW_COPY || bIsFileExists(PATH_TO_NEW_COPY) || bIsDirExists(PATH_TO_NEW_COPY))
+     {Err_Manager(Err_ALREADY_EXISTS,MAKE_COPY); return 0;}
 
     //if Type was a File
-    else if(bIsFileExists(PATH_TO_SRC))
+    else if(bIsFileExists(PATH_TO_SRC) && !bIsDirExists(PATH_TO_SRC))
     {
-        //check if des_File(NEW_COPY_NAME) already Exists
-        if(bIsFileExists(PATH_TO_NEW_COPY)) { Err_Manager(Err_ALREADY_EXISTS,MAKE_COPY); return 0; }
+        FILE *srcFile=fopen(PATH_TO_SRC,"r"), *desFile=fopen(PATH_TO_NEW_COPY,"w");
+        char c;
 
-        else
-        {
-            FILE *srcFile=fopen(PATH_TO_SRC,"r"), *desFile=fopen(PATH_TO_NEW_COPY,"w");
-            char c;
+        while( (c=fgetc(srcFile))!=EOF )
+        {fputc(c,desFile);}
 
-            while( (c=fgetc(srcFile))!=EOF )
-            {fputc(c,desFile);}
-
-            fclose(srcFile); fclose(desFile);
-            return 0;
-        }
+        fclose(srcFile); fclose(desFile);
+        return 0;
     }
 
     //If Type was a Directory (Soon..)
-    else if(bIsDirExists(PATH_TO_SRC))
+    else if(bIsDirExists(PATH_TO_SRC) && !bIsFileExists(PATH_TO_SRC) )
     {
-        //check if des_File(NEW_COPY_NAME) already Exists
-        if(bIsDirExists(PATH_TO_NEW_COPY)) { Err_Manager(Err_ALREADY_EXISTS,MAKE_COPY); return 0; }
-        //else {/* What's 1000-7 ? */}
-        return 0;
+         /* What's 1000-7 ? */ return -1;
     }
 
     else { return -1; }
