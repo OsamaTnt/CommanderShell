@@ -16,6 +16,8 @@ enum { Err_ChangeTextColor,Err_COLOR_NAME,
        Err_DELETE,Err_COULD_NOT_DELETE,Err_NOT_EXISTS,
        Err_RENAME,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT_RENAME };
 
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME};
+
 const int MAX_ARGS_SIZE =15;
 size_t i,j;
 
@@ -68,7 +70,7 @@ char* getLower(char *S)
     return temp;
 }
 
-void Err_Manager(int Err_ID)
+void Err_Manager(int Err_ID,int Command_ID)
 {
     switch(Err_ID)
     {
@@ -92,13 +94,19 @@ void Err_Manager(int Err_ID)
             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
 
 
-        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
+        /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME] || General Errs*/
         case Err_DELETE :
             {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_COULD_NOT_DELETE :
             {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
         case Err_NOT_EXISTS :
-            {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n"); break;}
+            {
+                if(Command_ID==DELETE)
+                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
+                else if(Command_ID==CHANGE_NAME)
+                 {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
+                break;
+            }
 
 
         /*03.$Rename -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
@@ -177,7 +185,7 @@ int Create(char *Type,char *PATH_NAME)
     if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
     {
         if(bIsFileExists(PATH_NAME))
-        {Err_Manager(Err_ALREADY_EXISTS); return 0;}
+        {Err_Manager(Err_ALREADY_EXISTS,CREATE); return 0;}
 
         else
         {
@@ -192,7 +200,7 @@ int Create(char *Type,char *PATH_NAME)
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
         if(bIsDirectoryExists(PATH_NAME))
-        {Err_Manager(Err_ALREADY_EXISTS); return 0; }
+        {Err_Manager(Err_ALREADY_EXISTS,CREATE); return 0; }
 
         else
         {
@@ -210,7 +218,7 @@ int _Delete(char *Type,char *PATH_NAME)
     //if Type was a File
     if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
     {
-        if(!bIsFileExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS); return 0;}
+        if(!bIsFileExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
 
         else
         {
@@ -227,7 +235,7 @@ int _Delete(char *Type,char *PATH_NAME)
     */
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
-        if(!bIsDirectoryExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS); return 0;}
+        if(!bIsDirectoryExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
 
         else
         {
@@ -243,7 +251,7 @@ int _Delete(char *Type,char *PATH_NAME)
 int changeName(char *PATH_OLD_NAME,char *NEW_NAME)
 {
     if(!bIsDirectoryExists(PATH_OLD_NAME) && !bIsFileExists(PATH_OLD_NAME))
-    {Err_Manager(Err_NOT_EXISTS); return 0;}
+    {Err_Manager(Err_NOT_EXISTS,CHANGE_NAME); return 0;}
 
     else
     {
@@ -284,8 +292,8 @@ void proc_Commands(char *commandArgs[])
         {
             if(commandArgs[1])
             {
-                if(changeTextColor(commandArgs[1])==-1) {Err_Manager(Err_COLOR_NAME);}
-            } else {Err_Manager(Err_ChangeTextColor);}
+                if(changeTextColor(commandArgs[1])==-1) {Err_Manager(Err_COLOR_NAME,CHANGE_TEXT_COLOR);}
+            } else {Err_Manager(Err_ChangeTextColor,CHANGE_TEXT_COLOR);}
         }
 
         /*01. proc $Create -[TYPE] -[PATH/TO/SPECIFIED-NAME]*/
@@ -298,16 +306,16 @@ void proc_Commands(char *commandArgs[])
                 {
                     if(commandArgs[2])
                     {
-                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREATE);}
-                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                        if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_CREATE,CREATE);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
 
                 } else
                   {
-                     Err_Manager(Err_NOT_SUPPORTED_TYPE);
-                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                     Err_Manager(Err_NOT_SUPPORTED_TYPE,CREATE);
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
                   }
 
-            } else {Err_Manager(Err_Create);}
+            } else {Err_Manager(Err_Create,CREATE);}
         }
 
         /*02.$Delete -[Type] -[PATH/TO/SPECIFIED-NAME]*/
@@ -320,16 +328,16 @@ void proc_Commands(char *commandArgs[])
                 {
                     if(commandArgs[2])
                     {
-                        if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_DELETE);}
-                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                        if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_DELETE,DELETE);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
 
                 } else
                   {
-                     Err_Manager(Err_NOT_SUPPORTED_TYPE);
-                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME);}
+                     Err_Manager(Err_NOT_SUPPORTED_TYPE,DELETE);
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
                   }
 
-            } else {Err_Manager(Err_DELETE);}
+            } else {Err_Manager(Err_DELETE,DELETE);}
         }
 
         /*03.$changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]*/
@@ -339,10 +347,10 @@ void proc_Commands(char *commandArgs[])
             {
                 if(commandArgs[2])
                 {
-                    if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME);}
-                } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME);}
+                    if(changeName(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT_RENAME,CHANGE_NAME);}
+                } else {Err_Manager(Err_NO_SPECIFIED_NEW_NAME,CHANGE_NAME);}
 
-            } else {Err_Manager(Err_RENAME);}
+            } else {Err_Manager(Err_RENAME,CHANGE_NAME);}
         }
 
     }
