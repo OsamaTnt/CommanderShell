@@ -16,7 +16,7 @@ enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err
        Err_COLOR_NAME,
        Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME,Err_ON_DELETE};
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT,LIST_CD};
 
 const int MAX_ARGS_SIZE =15;
 const int MAX_PATH_LENGTH=512;
@@ -143,6 +143,9 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_ENCRYPT \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
             else if(Command_ID==DECRYPT)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_DECRYPT \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
+            else if(Command_ID==LIST_CD)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_LIST_CD \n\n\t-Try $ListCurrentDirectory || $listCD\n\n");}
+
             break;
         }
 
@@ -541,6 +544,42 @@ int _Decrypt(char *PATH_TO_NAME)
 
 }
 
+int listCD()
+{
+    DIR *CD = opendir(".");
+    struct dirent *CD_content=NULL;
+    struct stat stat_buf;
+
+    if(!CD) {return -1;}
+
+    printf("\n---------------------------------------------------------------------------");
+    printf("\n\tContent \t\t Size \n");
+    printf("---------------------------------------------------------------------------\n");
+
+    int max_space_lenght=0;
+    while( (CD_content=readdir(CD))!=NULL )
+    {
+        if(max_space_lenght<strlen(CD_content->d_name))
+        {max_space_lenght=strlen(CD_content->d_name);}
+    }closedir(CD);
+
+    if( !(CD=opendir(".")) ) {return -1;}
+
+    while( (CD_content=readdir(CD))!=NULL )
+    {
+        printf("%s",CD_content->d_name);
+
+        for(i=0;i<=max_space_lenght-strlen(CD_content->d_name);i++)
+        {printf(" ");}
+
+        stat(CD_content->d_name,&stat_buf);
+        printf("\t-\t %iB\n",(int)stat_buf.st_size);
+
+    } printf("---------------------------------------------------------------------------\n\n");
+     closedir(CD);
+
+    return 0;
+}
 
 void proc_Commands(char *commandArgs[])
 {
@@ -648,11 +687,14 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_Usage,DECRYPT);}
         }
 
+        /*07.$ListCD*/
+        //TO DO seperate the commandArgs[0] && commandArgs[1] ==> /*07.$List -[CD || PATH/TO/DIR]*/
+        else if(strcmp(getLower(commandArgs[0]),"listcurrentdirectory")==0 || strcmp(getLower(commandArgs[0]),"listcd")==0)
+        { if(listCD()==-1){Err_Manager(Err_COULD_NOT,LIST_CD);}}
 
         /*
             ||\ TO DO /||
 
-            07.$ListCurrentDir
 
             08.$changeDir -[PATH/TO/NEW_DIR]
         */
