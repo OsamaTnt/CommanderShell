@@ -14,7 +14,7 @@ enum {false,true};  //false=0;true=1
 
 enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT,
        Err_COLOR_NAME,
-       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME};
+       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME,Err_ON_DELETE};
 
 enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT};
 
@@ -105,6 +105,9 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
             else if(Command_ID==ENCRYPT)
              {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
+            else if(Command_ID==DECRYPT)
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
+
             break;
         }
 
@@ -155,6 +158,9 @@ void Err_Manager(int Err_ID,int Command_ID)
         case Err_NO_SPECIFIED_PATH_TO_NAME :
             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_TO_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
 
+        /*$Decrypt -[PATH/TO/SRC_NAME]*/
+        case Err_ON_DELETE :
+            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE BACKUP_TEMP \n");}
 
         /*Defual*/
         default :
@@ -358,24 +364,39 @@ int makeCopy(char *PATH_TO_SRC,char *PATH_TO_NEW_COPY)
 char *getLastFromPath(char *PATH_TO_NAME)
 {
     char *LAST_NAME=NULL;
-    int Pos_To_Name=0;
+    int Pos_To_Last=0;
     bool bIsPath=false;
 
     for(i=0;i<strlen(PATH_TO_NAME);i++)
     {
-        if(PATH_TO_NAME[i]=='/') {bIsPath=true; Pos_To_Name=i;}
+        if(PATH_TO_NAME[i]=='/') {bIsPath=true; Pos_To_Last=i;}
     }
 
     if(!bIsPath) {LAST_NAME = PATH_TO_NAME;}
     else
     {
-        LAST_NAME = malloc(strlen(PATH_TO_NAME)-Pos_To_Name);
+        LAST_NAME = malloc(strlen(PATH_TO_NAME)-Pos_To_Last);
 
-        for(i=0,j=Pos_To_Name+1;j<=strlen(PATH_TO_NAME);i++,j++)
+        for(i=0,j=Pos_To_Last+1;j<=strlen(PATH_TO_NAME);i++,j++)
         {LAST_NAME[i] = PATH_TO_NAME[j];}
     }
 
     return LAST_NAME;
+}
+
+void removeLastFromPath(char *PATH_TO_NAME)
+{
+    int Pos_To_Last=0;
+    bool bIsPath=false;
+
+    for(i=0;i<strlen(PATH_TO_NAME);i++)
+    {
+        if(PATH_TO_NAME[i]=='/') {bIsPath=true; Pos_To_Last=i;}
+    }
+
+    //nothing to be removed
+    if(!bIsPath) {return;}
+    else {PATH_TO_NAME[Pos_To_Last]='\0';}
 }
 
 char *getCurrentDir()
@@ -384,6 +405,8 @@ char *getCurrentDir()
     getcwd(currentDir,MAX_PATH_LENGTH);
     return currentDir;
 }
+
+char *getBackupID() { return "-d@"; }
 
 /*
   ".How it Works." :
@@ -400,7 +423,7 @@ int encrypt(char *PATH_TO_NAME)
     {
         //set the BACKUP_PATH && BACKUP_NAME
         char *BACKUP_PATH=(char*)malloc(MAX_PATH_LENGTH);
-        char *BACKUP_ID="-d@";
+        char *BACKUP_ID=getBackupID();
 
         if(!bIsDirExists("BackupFolder")) {Create("d","BackupFolder");}
 
@@ -470,7 +493,52 @@ int encrypt(char *PATH_TO_NAME)
 
 int _Decrypt(char *PATH_TO_NAME)
 {
-    return -1;
+    FILE *srcFile=fopen(PATH_TO_NAME,"r+");
+
+    if(srcFile)
+    {
+        char *BACKUP_NAME=(char *)malloc(strlen(getLastFromPath(PATH_TO_NAME))+strlen(getBackupID()));
+        strcat(BACKUP_NAME,getBackupID()); strcat(BACKUP_NAME,getLastFromPath(PATH_TO_NAME));
+
+        removeLastFromPath(PATH_TO_NAME);
+        chdir(PATH_TO_NAME);
+
+        DIR *CurrentDir=opendir(".");
+        struct dirent *Dir_Content=NULL;
+
+        if(!CurrentDir) {return -1;}
+
+        while( (Dir_Content=readdir(CurrentDir)) !=NULL )
+        {
+            //check if BackupFolder exsists
+            if(strcmp(Dir_Content->d_name,"BackupFolder")==0 && bIsDirExists("BackupFolder"))
+            { chdir("BackupFolder"); CurrentDir=opendir("."); }
+
+            //check for BackupFile
+            else if(strcmp(Dir_Content->d_name,BACKUP_NAME)==0)
+            {
+                FILE *d_srcFile=fopen(BACKUP_NAME,"r");
+                if(!d_srcFile || !srcFile) {return -1;}
+                char c;
+
+                while( (c=fgetc(d_srcFile))!=EOF )
+                {fputc(c,srcFile);printf("%c\n",c);}
+
+                fclose(d_srcFile);
+
+                //delete the backupFile
+                if(unlink(BACKUP_NAME)==0) {return 0;}
+                else {Err_Manager(Err_ON_DELETE,DECRYPT); return 0;}
+            }
+        }
+
+        closedir(CurrentDir);
+        fclose(srcFile);
+        return 0;
+    }
+
+    else {Err_Manager(Err_NOT_EXISTS,DECRYPT); return 0;}
+
 }
 
 
