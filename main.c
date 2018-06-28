@@ -14,9 +14,9 @@ enum {false,true};  //false=0;true=1
 
 enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT,
        Err_COLOR_NAME,
-       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_NAME};
+       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME};
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT};
 
 const int MAX_ARGS_SIZE =15;
 const int MAX_PATH_LENGTH=512;
@@ -90,6 +90,8 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR :\n\t -Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
             else if(Command_ID==ENCRYPT)
              {printf("\nCOMMAND_ERROR :\n\t -Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
+            else if(Command_ID==DECRYPT)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
             break;
         }
 
@@ -135,7 +137,9 @@ void Err_Manager(int Err_ID,int Command_ID)
             else if(Command_ID==MAKE_COPY)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
             else if(Command_ID==ENCRYPT)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE_BACKUP \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_ENCRYPT \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
+            else if(Command_ID==DECRYPT)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_DECRYPT \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
             break;
         }
 
@@ -148,8 +152,8 @@ void Err_Manager(int Err_ID,int Command_ID)
         /*$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] local Errs*/
         case Err_NOT_SUPPORTED_TYPE :
             {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-        case Err_NO_SPECIFIED_PATH_NAME :
-            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
+        case Err_NO_SPECIFIED_PATH_TO_NAME :
+            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_TO_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
 
 
         /*Defual*/
@@ -201,29 +205,29 @@ int changeTextColor(char *COLOR_NAME)
     else {return -1;}
 }
 
-bool bIsFileExists(char *PATH_NAME)
+bool bIsFileExists(char *PATH_TO_NAME)
 {
-    if(fopen(PATH_NAME,"r")) {return true;}
+    if(fopen(PATH_TO_NAME,"r")) {return true;}
     else {return false;}
 }
 
-bool bIsDirExists(char *PATH_NAME)
+bool bIsDirExists(char *PATH_TO_NAME)
 {
-    if(opendir(PATH_NAME)) {return true;}
+    if(opendir(PATH_TO_NAME)) {return true;}
     else {return false;}
 }
 
-int Create(char *Type,char *PATH_NAME)
+int Create(char *Type,char *PATH_TO_NAME)
 {
     //if Type was a File
     if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
     {
-        if(bIsFileExists(PATH_NAME))
+        if(bIsFileExists(PATH_TO_NAME))
         {Err_Manager(Err_ALREADY_EXISTS,CREATE); return 0;}
 
         else
         {
-            FILE *F=fopen(PATH_NAME,"w");
+            FILE *F=fopen(PATH_TO_NAME,"w");
 
             if(!F) {return -1;}
             else {fclose(F); return 0;}
@@ -233,12 +237,12 @@ int Create(char *Type,char *PATH_NAME)
     //if Type was a directory
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
-        if(bIsDirExists(PATH_NAME))
+        if(bIsDirExists(PATH_TO_NAME))
         {Err_Manager(Err_ALREADY_EXISTS,CREATE); return 0; }
 
         else
         {
-            if(mkdir(PATH_NAME,ACCESSPERMS)==0) { return 0;}
+            if(mkdir(PATH_TO_NAME,ACCESSPERMS)==0) { return 0;}
             else {return -1;}
         }
     }
@@ -247,16 +251,16 @@ int Create(char *Type,char *PATH_NAME)
 
 }
 
-int _Delete(char *Type,char *PATH_NAME)
+int _Delete(char *Type,char *PATH_TO_NAME)
 {
     //if Type was a File
     if( (strcmp(getLower(Type),"-f")==0) || (strcmp(getLower(Type),"f")==0) )
     {
-        if(!bIsFileExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
+        if(!bIsFileExists(PATH_TO_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
 
         else
         {
-            if(unlink(PATH_NAME)==-1) {return -1;}
+            if(unlink(PATH_TO_NAME)==-1) {return -1;}
             else {return 0;}
         }
     }
@@ -269,11 +273,11 @@ int _Delete(char *Type,char *PATH_NAME)
     */
     else if( (strcmp(getLower(Type),"-d")==0) || (strcmp(getLower(Type),"d")==0) )
     {
-        if(!bIsDirExists(PATH_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
+        if(!bIsDirExists(PATH_TO_NAME)) { Err_Manager(Err_NOT_EXISTS,DELETE); return 0;}
 
         else
         {
-            if(rmdir(PATH_NAME)==-1) {return -1;}
+            if(rmdir(PATH_TO_NAME)==-1) {return -1;}
             else {return 0;}
         }
     }
@@ -387,10 +391,10 @@ char *getCurrentDir()
     - an auto generated backupFile will be created & stored inside BackupFolder on the same path (auto-created if non found)
     - the backupFile will be used later-on to decrypt the srcFile && the backupFile will be auto-removed
 */
-int encrypt(char *PATH_NAME)
+int encrypt(char *PATH_TO_NAME)
 {
-    FILE *srcFile=fopen(PATH_NAME,"r"), *updated_srcFile=fopen(PATH_NAME,"r+");
-    if(!bIsFileExists(PATH_NAME) || !srcFile) { Err_Manager(Err_NOT_EXISTS,ENCRYPT); return 0; }
+    FILE *srcFile=fopen(PATH_TO_NAME,"r"), *updated_srcFile=fopen(PATH_TO_NAME,"r+");
+    if(!bIsFileExists(PATH_TO_NAME) || !srcFile) { Err_Manager(Err_NOT_EXISTS,ENCRYPT); return 0; }
 
     else
     {
@@ -402,14 +406,14 @@ int encrypt(char *PATH_NAME)
 
         strcat(BACKUP_PATH,getCurrentDir());  strcat(BACKUP_PATH,"/BackupFolder/");
 
-        char *BACKUP_NAME = malloc(strlen(getLastFromPath(PATH_NAME))+strlen(BACKUP_ID));
-        strcat(BACKUP_NAME,BACKUP_ID);  strcat(BACKUP_NAME,getLastFromPath(PATH_NAME));
+        char *BACKUP_NAME = malloc(strlen(getLastFromPath(PATH_TO_NAME))+strlen(BACKUP_ID));
+        strcat(BACKUP_NAME,BACKUP_ID);  strcat(BACKUP_NAME,getLastFromPath(PATH_TO_NAME));
 
         strcat(BACKUP_PATH,BACKUP_NAME);
 
         //create the auto generated backupFile inside BackupFolder
         FILE *backupFile = fopen(BACKUP_PATH,"w");
-        if(!backupFile) {Err_Manager(Err_COULD_NOT,ENCRYPT);return 0;}
+        if(!backupFile) {return -1;}
 
         //do the magic here..
         else
@@ -459,8 +463,14 @@ int encrypt(char *PATH_NAME)
 
             fclose(srcFile); fclose(backupFile); fclose(updated_srcFile);
         }
+
+        return 0;
     }
-    return 0;
+}
+
+int _Decrypt(char *PATH_TO_NAME)
+{
+    return -1;
 }
 
 
@@ -488,12 +498,12 @@ void proc_Commands(char *commandArgs[])
                     if(commandArgs[2])
                     {
                         if(Create(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,CREATE);}
-                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_TO_NAME,CREATE);}
 
                 } else
                   {
                      Err_Manager(Err_NOT_SUPPORTED_TYPE,CREATE);
-                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,CREATE);}
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_TO_NAME,CREATE);}
                   }
 
             } else {Err_Manager(Err_Usage,CREATE);}
@@ -510,12 +520,12 @@ void proc_Commands(char *commandArgs[])
                     if(commandArgs[2])
                     {
                         if(_Delete(commandArgs[1],commandArgs[2])==-1) {Err_Manager(Err_COULD_NOT,DELETE);}
-                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
+                    } else {Err_Manager(Err_NO_SPECIFIED_PATH_TO_NAME,DELETE);}
 
                 } else
                   {
                      Err_Manager(Err_NOT_SUPPORTED_TYPE,DELETE);
-                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_NAME,DELETE);}
+                     if(!commandArgs[2]) {Err_Manager(Err_NO_SPECIFIED_PATH_TO_NAME,DELETE);}
                   }
 
             } else {Err_Manager(Err_Usage,DELETE);}
@@ -559,10 +569,20 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_Usage,ENCRYPT);}
         }
 
+
+        /*06.$Decrypt -[PATH/TO/SRC_NAME]*/
+        else if(strcmp(getLower(commandArgs[0]),"decrypt")==0)
+        {
+            if(commandArgs[1])
+            {
+                if(_Decrypt(commandArgs[1])==-1) {Err_Manager(Err_COULD_NOT,DECRYPT);}
+
+            } else {Err_Manager(Err_Usage,DECRYPT);}
+        }
+
+
         /*
             ||\ TO DO /||
-
-            06.$Decrypt -[PATH/TO/SRC_NAME]
 
             07.$ListCurrentDir
 
