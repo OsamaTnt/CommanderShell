@@ -16,11 +16,12 @@ enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err
        Err_COLOR_NAME,
        Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME,Err_ON_DELETE};
 
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT,LIST_CD};
+enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT,LIST_CD,CHANGE_CD};
 
 const int MAX_ARGS_SIZE =15;
 const int MAX_PATH_LENGTH=512;
 size_t i,j;
+bool bshowCD;
 
 void displayShell_Id(char *userName,char*shellName)
 {
@@ -92,6 +93,8 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR :\n\t -Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
             else if(Command_ID==DECRYPT)
              {printf("\nCOMMAND_ERROR :\n\t -Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
+            else if(Command_ID==CHANGE_CD)
+             {printf("\nCOMMAND_ERROR :\n\t -Try $ChangeCD -[PATH/TO/DIR]\n\n");}
             break;
         }
 
@@ -144,8 +147,9 @@ void Err_Manager(int Err_ID,int Command_ID)
             else if(Command_ID==DECRYPT)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_DECRYPT \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
             else if(Command_ID==LIST_CD)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_LIST_CD \n\n\t-Try $ListCurrentDirectory || $listCD\n\n");}
-
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_LIST_CD \n\n\t-Try $ListCD\n\n");}
+            else if(Command_ID==CHANGE_CD)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_CHANGE_CD \n\n\t-Try $ChangeCD -[PATH/TO/DIR]\n\n");}
             break;
         }
 
@@ -546,7 +550,10 @@ int _Decrypt(char *PATH_TO_NAME)
 
 int listCD()
 {
-    DIR *CD = opendir(".");
+    char *CD_NAME=getLastFromPath(getCurrentDir());
+    printf("\nCD : %s\n",CD_NAME);
+
+    DIR *CD = opendir(getCurrentDir());
     struct dirent *CD_content=NULL;
     struct stat stat_buf;
 
@@ -563,7 +570,7 @@ int listCD()
         {max_space_lenght=strlen(CD_content->d_name);}
     }closedir(CD);
 
-    if( !(CD=opendir(".")) ) {return -1;}
+    if( !(CD=opendir(getCurrentDir())) ) {return -1;}
 
     while( (CD_content=readdir(CD))!=NULL )
     {
@@ -577,6 +584,25 @@ int listCD()
 
     } printf("---------------------------------------------------------------------------\n\n");
      closedir(CD);
+
+    return 0;
+}
+/*
+    "what happens in case of $changeCD (THE Problema "important" ".--.") "
+     -when a new process is spawned to run $changeCD command
+     -the chdir() will change its current directory
+     -Once the child exits(died), we're back to the parent shell current directory.
+     -The shell is still where it was
+*/
+int changeCD(char *PATH_TO_DIR)
+{
+    if(!bIsDirExists(PATH_TO_DIR)) {printf("wrong\n");return -1;}
+
+    chdir(PATH_TO_DIR);
+    bshowCD=true;
+
+    char *CD_NAME=getLastFromPath(getCurrentDir());
+    printf("\nCD : %s\n\n",CD_NAME);
 
     return 0;
 }
@@ -687,24 +713,28 @@ void proc_Commands(char *commandArgs[])
             } else {Err_Manager(Err_Usage,DECRYPT);}
         }
 
+
         /*07.$ListCD*/
         //TO DO seperate the commandArgs[0] && commandArgs[1] ==> /*07.$List -[CD || PATH/TO/DIR]*/
         else if(strcmp(getLower(commandArgs[0]),"listcurrentdirectory")==0 || strcmp(getLower(commandArgs[0]),"listcd")==0)
-        { if(listCD()==-1){Err_Manager(Err_COULD_NOT,LIST_CD);}}
-
-        /*
-            ||\ TO DO /||
+        { if(listCD()==-1) {Err_Manager(Err_COULD_NOT,LIST_CD);}}
 
 
-            08.$changeDir -[PATH/TO/NEW_DIR]
-        */
+        /*08.$ChangeCD -[PATH/TO/NEW_DIR]*/
+        else if(strcmp(getLower(commandArgs[0]),"changecurrentdirectory")==0 || strcmp(getLower(commandArgs[0]),"changecd")==0 || strcmp(getLower(commandArgs[0]),"changedir")==0)
+        {
+            if(commandArgs[1])
+            {
+                if(changeCD(commandArgs[1])==-1) {Err_Manager(Err_COULD_NOT,CHANGE_CD);}
+            } else {Err_Manager(Err_Usage,CHANGE_CD);}
+        }
     }
-}
 
+}
 
 int main()
 {
-
+    bshowCD=false;
     char *userName=getlogin(); strcat(userName,": $");
     char *shellName="Commander_";
 
