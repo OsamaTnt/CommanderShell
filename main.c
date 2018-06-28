@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <time.h>
 #include "ANSI_COLORS.h"
 
 typedef int bool;
@@ -18,6 +19,7 @@ enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err
 enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT};
 
 const int MAX_ARGS_SIZE =15;
+const int MAX_PATH_LENGTH=512;
 size_t i,j;
 
 void displayShell_Id(char *userName,char*shellName)
@@ -98,7 +100,9 @@ void Err_Manager(int Err_ID,int Command_ID)
             else if(Command_ID==CHANGE_NAME)
              {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
             else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]*/\n\n");}
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            else if(Command_ID==ENCRYPT)
+             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
             break;
         }
 
@@ -119,6 +123,7 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
             break;
         }
+
         case Err_COULD_NOT :
         {
             if(Command_ID==CREATE)
@@ -129,6 +134,8 @@ void Err_Manager(int Err_ID,int Command_ID)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
             else if(Command_ID==MAKE_COPY)
              {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
+            else if(Command_ID==ENCRYPT)
+             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE_BACKUP \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
             break;
         }
 
@@ -344,9 +351,116 @@ int makeCopy(char *PATH_TO_SRC,char *PATH_TO_NEW_COPY)
     else { return -1; }
 }
 
+char *getLastFromPath(char *PATH_TO_NAME)
+{
+    char *LAST_NAME=NULL;
+    int Pos_To_Name=0;
+    bool bIsPath=false;
+
+    for(i=0;i<strlen(PATH_TO_NAME);i++)
+    {
+        if(PATH_TO_NAME[i]=='/') {bIsPath=true; Pos_To_Name=i;}
+    }
+
+    if(!bIsPath) {LAST_NAME = PATH_TO_NAME;}
+    else
+    {
+        LAST_NAME = malloc(strlen(PATH_TO_NAME)-Pos_To_Name);
+
+        for(i=0,j=Pos_To_Name+1;j<=strlen(PATH_TO_NAME);i++,j++)
+        {LAST_NAME[i] = PATH_TO_NAME[j];}
+    }
+
+    return LAST_NAME;
+}
+
+char *getCurrentDir()
+{
+    char *currentDir=(char*)malloc(MAX_PATH_LENGTH);
+    getcwd(currentDir,MAX_PATH_LENGTH);
+    return currentDir;
+}
+
+/*
+  ".How it Works." :
+    - the encryption method is simply rely on random ascii-code that will be generated for each char inside the srcFile
+    - an auto generated backupFile will be created & stored inside BackupFolder on the same path (auto-created if non found)
+    - the backupFile will be used later-on to decrypt the srcFile && the backupFile will be auto-removed
+*/
 int encrypt(char *PATH_NAME)
 {
-    return -1;
+    FILE *srcFile=fopen(PATH_NAME,"r"), *updated_srcFile=fopen(PATH_NAME,"r+");
+    if(!bIsFileExists(PATH_NAME) || !srcFile) { Err_Manager(Err_NOT_EXISTS,ENCRYPT); return 0; }
+
+    else
+    {
+        //set the BACKUP_PATH && BACKUP_NAME
+        char *BACKUP_PATH=(char*)malloc(MAX_PATH_LENGTH);
+        char *BACKUP_ID="-d@";
+
+        if(!bIsDirExists("BackupFolder")) {Create("d","BackupFolder");}
+
+        strcat(BACKUP_PATH,getCurrentDir());  strcat(BACKUP_PATH,"/BackupFolder/");
+
+        char *BACKUP_NAME = malloc(strlen(getLastFromPath(PATH_NAME))+strlen(BACKUP_ID));
+        strcat(BACKUP_NAME,BACKUP_ID);  strcat(BACKUP_NAME,getLastFromPath(PATH_NAME));
+
+        strcat(BACKUP_PATH,BACKUP_NAME);
+
+        //create the auto generated backupFile inside BackupFolder
+        FILE *backupFile = fopen(BACKUP_PATH,"w");
+        if(!backupFile) {Err_Manager(Err_COULD_NOT,ENCRYPT);return 0;}
+
+        //do the magic here..
+        else
+        {
+            char c;
+            int Rand_Group,Rand_ASCII_ID,Rand_Char,Rand_SpecialChar;
+
+            //update & seed the rand() with the current time (seconds!)
+            srand(time(NULL));
+
+            while( (c=fgetc(srcFile))!=EOF )
+            {
+                //We don't wont the \n to get involved in encryption process
+                if(c!='\n')
+                {
+                    Rand_Group = rand()%3;
+                    switch(Rand_Group)
+                    {
+                        case 0: /*numerical-range*/
+                         {Rand_ASCII_ID = rand()%10+48; break;}
+
+                        case 1: /*alphabatical-range*/
+                        {
+                            Rand_Char = rand()%2;
+                            if(Rand_Char==0) {Rand_ASCII_ID = rand()%26+65;}
+                            else {Rand_ASCII_ID = rand()%26+97;} break;
+                        }
+
+                        case 2: /*specialChar-range*/
+                        {
+                            Rand_SpecialChar = rand()%3;
+                            if(Rand_SpecialChar==0) {Rand_ASCII_ID = rand()%16+32;}
+                            else if(Rand_SpecialChar==1) {Rand_ASCII_ID = rand()%7+58;}
+                            else {Rand_ASCII_ID = rand()%4+123;} break;
+                        }
+
+                        default: {break;}
+                    }
+                    fputc(c,backupFile);
+                    fputc(Rand_ASCII_ID,updated_srcFile);
+                }
+
+                /*[OPTINAL] save '\n' from encryption*/
+                else { fputc('\n',updated_srcFile); fputc('\n',backupFile); }
+
+            }//END_OF_LOOP
+
+            fclose(srcFile); fclose(backupFile); fclose(updated_srcFile);
+        }
+    }
+    return 0;
 }
 
 
