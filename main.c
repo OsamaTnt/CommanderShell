@@ -7,16 +7,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <time.h>
+#include "ERROR_MANAGER.h"
 #include "ANSI_COLORS.h"
-
-typedef int bool;
-enum {false,true};  //false=0;true=1
-
-enum { Err_Usage,Err_NOT_EXISTS,Err_ALREADY_EXISTS,Err_NO_SPECIFIED_NEW_NAME,Err_COULD_NOT,
-       Err_COLOR_NAME,
-       Err_NOT_SUPPORTED_TYPE,Err_NO_SPECIFIED_PATH_TO_NAME,Err_ON_DELETE};
-
-enum {CHANGE_TEXT_COLOR,CREATE,DELETE,CHANGE_NAME,MAKE_COPY,ENCRYPT,DECRYPT,LIST_CD,CHANGE_CD};
 
 const int MAX_ARGS_SIZE =15;
 const int MAX_PATH_LENGTH=512;
@@ -72,152 +64,11 @@ char* getLower(char *S)
     return temp;
 }
 
-void Err_Manager(int Err_ID,int Command_ID)
-{
-    switch(Err_ID)
-    {
-        /*General Errs*/
-        case Err_Usage :
-        {
-            if(Command_ID==CHANGE_TEXT_COLOR)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $changeTextColor -[COLOR_NAME]\n\n");}
-            else if(Command_ID==CREATE)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
-            else if(Command_ID==DELETE)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-            else if(Command_ID==CHANGE_NAME)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-            else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-            else if(Command_ID==ENCRYPT)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
-            else if(Command_ID==DECRYPT)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
-            else if(Command_ID==CHANGE_CD)
-             {printf("\nCOMMAND_ERROR :\n\t -Try $ChangeCD -[PATH/TO/DIR]\n\n");}
-            break;
-        }
-
-        case Err_NOT_EXISTS :
-        {
-            if(Command_ID==DELETE)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-            else if(Command_ID==CHANGE_NAME)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-            else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-            else if(Command_ID==ENCRYPT)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
-            else if(Command_ID==DECRYPT)
-             {printf("\nCOMMAND_ERROR : _NOT_EXISTS \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
-
-            break;
-        }
-
-        case Err_ALREADY_EXISTS :
-        {
-            if(Command_ID==CREATE)
-             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
-            else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR : _ALREADY_EXISTS \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-            break;
-        }
-
-        case Err_NO_SPECIFIED_NEW_NAME :
-        {
-            if(Command_ID==CHANGE_NAME)
-             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $changeName -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-            else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_NEW_NAME \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-            break;
-        }
-
-        case Err_COULD_NOT :
-        {
-            if(Command_ID==CREATE)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_CREATE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n");}
-            else if(Command_ID==DELETE)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE \n\n\t-Try $Delete -[TYPE] -[PATH/TO/SPECIFIED-NAME]\n\n");}
-            else if(Command_ID==CHANGE_NAME)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_RENAME \n\n\t-Try $changeNames -[PATH/TO/OLD-NAME] -[NEW-NAME]\n\n");}
-            else if(Command_ID==MAKE_COPY)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_COPY \n\n\t-Try $makeCopy -[PATH/TO/SRC_NAME] -[PATH/TO/NEW_COPY]\n\n");}
-            else if(Command_ID==ENCRYPT)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_ENCRYPT \n\n\t-Try $Encrypt -[PATH/TO/SRC_NAME]\n\n");}
-            else if(Command_ID==DECRYPT)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_DECRYPT \n\n\t-Try $Decrypt -[PATH/TO/SRC_NAME]\n\n");}
-            else if(Command_ID==LIST_CD)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_LIST_CD \n\n\t-Try $ListCD\n\n");}
-            else if(Command_ID==CHANGE_CD)
-             {printf("\nCOMMAND_ERROR : _COULD_NOT_CHANGE_CD \n\n\t-Try $ChangeCD -[PATH/TO/DIR]\n\n");}
-            break;
-        }
-
-
-        /*$changeTextColor -[COLOR_NAME] local Errs*/
-        case Err_COLOR_NAME :
-            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_COLOR_CODE\n\n\t-Try $changeTextColor [COLOR_NAME]\n\n"); break;}
-
-
-        /*$Create -[TYPE] -[PATH/TO/SPECIFIED-NAME] local Errs*/
-        case Err_NOT_SUPPORTED_TYPE :
-            {printf("\nCOMMAND_ERROR : _NOT_SUPPORTED_TYPE \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-        case Err_NO_SPECIFIED_PATH_TO_NAME :
-            {printf("\nCOMMAND_ERROR : _NO_SPECIFIED_PATH_TO_NAME \n\n\t-Try $Create -[TYPE] -[PATH/TO/NEW-NAME]\n\n"); break;}
-
-        /*$Decrypt -[PATH/TO/SRC_NAME]*/
-        case Err_ON_DELETE :
-            {printf("\nCOMMAND_ERROR : _COULD_NOT_DELETE BACKUP_TEMP \n");}
-
-        /*Defual*/
-        default :
-            break;
-
-    }
-}
-
 /*
     changeTextColor() ".How it Works." :
     if ( COLOR_NAME IS CORRECT && COLOR_IS_SUPPORTED) {UPDATE_COLOR && return(0)}
     else {Err && return(-1)}
 */
-int changeTextColor(char *COLOR_NAME)
-{
-    if( (strcmp(getLower(COLOR_NAME),"-black")==0) || (strcmp(getLower(COLOR_NAME),"black")==0) )
-     {printf("%s\n",ANSI_BLACK); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-red")==0) || (strcmp(getLower(COLOR_NAME),"red")==0) )
-     {printf("%s\n",ANSI_RED); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-green")==0) || (strcmp(getLower(COLOR_NAME),"green")==0) )
-     {printf("%s\n",ANSI_GREEN); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-brown")==0) || (strcmp(getLower(COLOR_NAME),"brown")==0) )
-     {printf("%s\n",ANSI_BROWN); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-blue")==0) || (strcmp(getLower(COLOR_NAME),"blue")==0) )
-     {printf("%s\n",ANSI_BLUE); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-magenta")==0) || (strcmp(getLower(COLOR_NAME),"magenta")==0) )
-     {printf("%s\n",ANSI_MAGENTA); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-cyan")==0) || (strcmp(getLower(COLOR_NAME),"cyan")==0) )
-     {printf("%s\n",ANSI_CYAN); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-gray")==0) || (strcmp(getLower(COLOR_NAME),"gray")==0) )
-     {printf("%s\n",ANSI_GRAY); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-yellow")==0) || (strcmp(getLower(COLOR_NAME),"yellow")==0) )
-     {printf("%s\n",ANSI_YELLOW); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-white")==0) || (strcmp(getLower(COLOR_NAME),"white")==0) )
-     {printf("%s\n",ANSI_WHITE); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-dark_gray")==0) || (strcmp(getLower(COLOR_NAME),"dark_gray")==0) )
-     {printf("%s\n",ANSI_DARK_GRAY); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-light_red")==0) || (strcmp(getLower(COLOR_NAME),"light_red")==0) )
-     {printf("%s\n",ANSI_LIGHT_RED); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-light_green")==0) || (strcmp(getLower(COLOR_NAME),"light_green")==0) )
-     {printf("%s\n",ANSI_LIGHT_GREEN); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-light_blue")==0) || (strcmp(getLower(COLOR_NAME),"light_blue")==0) )
-     {printf("%s\n",ANSI_LIGHT_BLUE); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-light_magenta")==0) || (strcmp(getLower(COLOR_NAME),"light_magenta")==0) )
-     {printf("%s\n",ANSI_LIGHT_MAGENTA); return 0;}
-    else if( (strcmp(getLower(COLOR_NAME),"-light_cyan")==0) || (strcmp(getLower(COLOR_NAME),"light_cyan")==0) )
-     {printf("%s\n",ANSI_LIGHT_CYAN); return 0;}
-    else {return -1;}
-}
-
 bool bIsFileExists(char *PATH_TO_NAME)
 {
     if(fopen(PATH_TO_NAME,"r")) {return true;}
@@ -263,6 +114,7 @@ int Create(char *Type,char *PATH_TO_NAME)
     else {return -1;}
 
 }
+
 
 int _Delete(char *Type,char *PATH_TO_NAME)
 {

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1530230376 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
+1530254108 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -9,9 +9,12 @@
 	<sys/stat.h>
 	<dirent.h>
 	<time.h>
+	"ERROR_MANAGER.h"
 	"ANSI_COLORS.h"
 
-1530174259 /home/osama/Desktop/CommanderShell/CommanderShell.git/ANSI_COLORS.h
+1530254311 /home/osama/Desktop/CommanderShell/CommanderShell.git/ANSI_COLORS.h
+	"stdio.h"
+	"string.h"
 
 1530122996 source:/home/osama/Desktop/CommanderShell/CommanderShell/main.c
 	<stdio.h>
@@ -25,4 +28,21 @@
 	"ANSI_COLORS.h"
 
 1529799663 /home/osama/Desktop/CommanderShell/CommanderShell/ANSI_COLORS.h
+
+1530249913 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/changeTextColor.c
+	"ANSI_COLORS.h"
+
+1530249913 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/ANSI_COLORS.c
+	"ANSI_COLORS.h"
+
+1530254142 /home/osama/Desktop/CommanderShell/CommanderShell.git/ERROR_MANAGER.h
+	"stdio.h"
+
+1530251271 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/ERROR_MANAGER.c
+	"ERROR_MANAGER.h"
+
+1530253442 /home/osama/Desktop/CommanderShell/CommanderShell.git/COMMANDS.h
+
+1530252180 source:/home/osama/Desktop/CommanderShell/CommanderShell.git/Create.c
+	"COMMANDS.h"
 

@@ -3,6 +3,8 @@
 /*
     ANSI_COLOR CODES Will be used to proc $changeTextColor
 */
+#include "stdio.h"
+#include "string.h"
 
 #define ANSI_BLACK "\033[22;30m"
 #define ANSI_RED "\033[22;31m"
@@ -20,3 +22,6 @@
 #define ANSI_LIGHT_BLUE "\033[01;34m"
 #define ANSI_LIGHT_MAGENTA "\033[01;35m"
 #define ANSI_LIGHT_CYAN "\033[01;36m"
+
+char* getLower(char *S);
+int changeTextColor(char *COLOR_NAME);
