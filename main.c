@@ -501,51 +501,37 @@ int encrypt(char *PATH_TO_NAME)
 int _Decrypt(char *PATH_TO_NAME)
 {
     FILE *srcFile=fopen(PATH_TO_NAME,"r+");
-
     if(srcFile)
     {
-        char *BACKUP_NAME=(char *)malloc(strlen(getLastFromPath(PATH_TO_NAME))+strlen(getBackupID()));
-        strcat(BACKUP_NAME,getBackupID()); strcat(BACKUP_NAME,getLastFromPath(PATH_TO_NAME));
+        char *BACKUP_Name=(char *)malloc(strlen(getLastFromPath(PATH_TO_NAME))+strlen(getBackupID()));
+        strcat(BACKUP_Name,getBackupID());
+        strcat(BACKUP_Name,getLastFromPath(PATH_TO_NAME));
 
+        char *BACKUP_PATH=(char *)malloc(MAX_PATH_LENGTH);
         removeLastFromPath(PATH_TO_NAME);
-        chdir(PATH_TO_NAME);
 
-        DIR *CurrentDir=opendir(".");
-        struct dirent *Dir_Content=NULL;
+        if(bIsDirExists(PATH_TO_NAME)) {strcat(BACKUP_PATH,PATH_TO_NAME);}
+        else {strcat(BACKUP_PATH,getCurrentDir());}
 
-        if(!CurrentDir) {return -1;}
+        strcat(BACKUP_PATH,"/BackupFolder");
 
-        while( (Dir_Content=readdir(CurrentDir)) !=NULL )
-        {
-            //check if BackupFolder exsists
-            if(strcmp(Dir_Content->d_name,"BackupFolder")==0 && bIsDirExists("BackupFolder"))
-            { chdir("BackupFolder"); CurrentDir=opendir("."); }
+        if(!bIsDirExists(BACKUP_PATH)) {return -1;}
 
-            //check for BackupFile
-            else if(strcmp(Dir_Content->d_name,BACKUP_NAME)==0)
-            {
-                FILE *d_srcFile=fopen(BACKUP_NAME,"r");
-                if(!d_srcFile || !srcFile) {return -1;}
-                char c;
+        strcat(BACKUP_PATH,"/"); strcat(BACKUP_PATH,BACKUP_Name);
 
-                while( (c=fgetc(d_srcFile))!=EOF )
-                {fputc(c,srcFile);printf("%c\n",c);}
+        FILE *d_srcFile=fopen(BACKUP_PATH,"r");
+        if(!d_srcFile || !bIsFileExists(BACKUP_PATH)) {return -1;}
 
-                fclose(d_srcFile);
+        char c;
+        while( (c=fgetc(d_srcFile))!=EOF )
+        {fputc(c,srcFile);} fclose(d_srcFile); fclose(srcFile);
 
-                //delete the backupFile
-                if(unlink(BACKUP_NAME)==0) {return 0;}
-                else {Err_Manager(Err_ON_DELETE,DECRYPT); return 0;}
-            }
-        }
-
-        closedir(CurrentDir);
-        fclose(srcFile);
+        if(!unlink(BACKUP_PATH)) { Err_Manager(Err_ON_DELETE,DECRYPT); }
         return 0;
     }
 
-    else {Err_Manager(Err_NOT_EXISTS,DECRYPT); return 0;}
-
+    else {Err_Manager(Err_NOT_EXISTS,DECRYPT);}
+    return 0;
 }
 
 int listCD()
